@@ -49,7 +49,6 @@
     <table>
         <thead>
             <tr>
-                <th>Username</th>
                 <th>HWID</th>
                 <th>IP Address</th>
                 <th>Status</th>
@@ -57,7 +56,7 @@
             </tr>
         </thead>
         <tbody id="user-table-body">
-            <tr><td colspan="5" style="text-align: center;">Loading users from Firebase...</td></tr>
+            <tr><td colspan="4" style="text-align: center;">Loading users from Firebase...</td></tr>
         </tbody>
     </table>
 
@@ -70,16 +69,15 @@
                 tbody.innerHTML = '';
 
                 if (users.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No users found.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No users found.</td></tr>';
                     return;
                 }
 
                 users.forEach(user => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td>${user.username || 'N/A'}</td>
                         <td>${user.hwid || 'No HWID'}</td>
-                        <td>${user.ip_address || 'N/A'}</td>
+                        <td>${user.ip || 'N/A'}</td>
                         <td>${user.status || 'Active'}</td>
                         <td>
                             <button class="btn btn-clear" onclick="clearUser('${user.id}')">Clear</button>
