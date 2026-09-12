@@ -3,115 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Omega Admin Panel</title>
+    <title>OmegaBot Admin Panel</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
-            padding: 20px;
+            background-color: #121212;
+            color: #e0e0e0;
             margin: 0;
+            padding: 20px;
         }
-        h1 { color: #38bdf8; text-align: center; }
+        h1 {
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
-            background-color: #1e293b;
+            background-color: #1e1e1e;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
             border-radius: 8px;
             overflow: hidden;
         }
         th, td {
             padding: 12px 15px;
             text-align: left;
-            border-bottom: 1px solid #334155;
+            border-bottom: 1px solid #2c2c2c;
         }
-        th { background-color: #0284c7; color: white; }
-        .btn {
-            padding: 6px 12px;
+        th {
+            background-color: #252525;
+            color: #ffffff;
+            text-transform: uppercase;
             font-size: 14px;
-            font-weight: bold;
+        }
+        tr:hover {
+            background-color: #2a2a2a;
+        }
+        .btn-clear {
+            background-color: #ff9800;
+            color: white;
             border: none;
+            padding: 8px 12px;
             border-radius: 4px;
             cursor: pointer;
-            color: white;
+            font-weight: bold;
+            margin-right: 5px;
         }
-        .btn-clear { background-color: #dc2626; }
-        .btn-clear:hover { background-color: #b91c1c; }
-        .btn-fix { background-color: #16a34a; }
-        .btn-fix:hover { background-color: #15803d; }
+        .btn-clear:hover {
+            background-color: #e68900;
+        }
+        .btn-fix {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-fix:hover {
+            background-color: #45a049;
+        }
+        .status-locked {
+            color: #ff5252;
+            font-weight: bold;
+        }
+        .status-unlocked {
+            color: #69f0ae;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Omega Admin Panel - User Management</h1>
-    
+    <h1>OmegaBot Client Management Panel</h1>
+
     <table>
         <thead>
             <tr>
                 <th>HWID</th>
                 <th>IP Address</th>
                 <th>Status</th>
-                <th>Actions</th>
+                <th>Action State</th>
+                <th>Controls</th>
             </tr>
         </thead>
-        <tbody id="user-table-body">
-            <tr><td colspan="4" style="text-align: center;">Loading users from Firebase...</td></tr>
+        <tbody>
+            {% if users %}
+                {% for user in users %}
+                <tr>
+                    <td><code>{{ user.hwid }}</code></td>
+                    <td>{{ user.ip }}</td>
+                    <td>
+                        <span class="{% if user.status == 'unlocked' %}status-unlocked{% else %}status-locked{% endif %}">
+                            {{ user.status | upper }}
+                        </span>
+                    </td>
+                    <td>{{ user.action | default('none') }}</td>
+                    <td>
+                        <!-- Button para sa Clear -->
+                        <button class="btn-clear" onclick="triggerAction('clear', '{{ user.hwid }}')">Clear Files</button>
+                        
+                        <!-- Button para sa Fix / Unlock -->
+                        <button class="btn-fix" onclick="triggerAction('fix', '{{ user.hwid }}')">Fix</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #888;">Walang nakarehistrong client sa database.</td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
 
     <script>
-        async function fetchUsers() {
-            try {
-                const response = await fetch('/api/users');
-                const users = await response.json();
-                const tbody = document.getElementById('user-table-body');
-                tbody.innerHTML = '';
-
-                if (users.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No users found.</td></tr>';
-                    return;
-                }
-
-                users.forEach(user => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${user.hwid || 'No HWID'}</td>
-                        <td>${user.ip || 'N/A'}</td>
-                        <td>${user.status || 'Active'}</td>
-                        <td>
-                            <button class="btn btn-clear" onclick="clearUser('${user.id}')">Clear</button>
-                            <button class="btn btn-fix" onclick="fixUser('${user.id}')">Fix</button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } catch (error) {
-                console.error("Error fetching users:", error);
+        function triggerAction(actionType, hwid) {
+            let url = '';
+            if (actionType === 'fix' || actionType === 'unlock') {
+                url = '/api/fix/' + hwid;
+            } else if (actionType === 'clear') {
+                url = '/api/clear/' + hwid;
+            }
+            
+            if (confirm('Sigurado ka bang nais mong isagawa ang utos na ' + actionType.toUpperCase() + ' para sa HWID na ito?')) {
+                fetch(url, { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data.success) {
+                            alert(actionType.toUpperCase() + ' command sent successfully!');
+                            location.reload();
+                        } else {
+                            alert('May error: ' + (data.error || 'Hindi natuloy ang utos.'));
+                        }
+                    })
+                    .catch(err => {
+                        alert('Error sa koneksyon sa server.');
+                        console.error(err);
+                    });
             }
         }
-
-        async function clearUser(userId) {
-            if (confirm("Are you sure you want to clear this user's HWID?")) {
-                const res = await fetch(`/api/clear/${userId}`, { method: 'POST' });
-                if (res.ok) {
-                    fetchUsers();
-                } else {
-                    alert("Failed to clear user.");
-                }
-            }
-        }
-
-        async function fixUser(userId) {
-            const res = await fetch(`/api/fix/${userId}`, { method: 'POST' });
-            if (res.ok) {
-                fetchUsers();
-            } else {
-                alert("Failed to fix user.");
-            }
-        }
-
-        fetchUsers();
     </script>
 
 </body>
