@@ -20,6 +20,7 @@ def index():
     return render_template('index.html')
 
 @app.route('/users')
+@app.route('/api/users')
 def get_users():
     if not db:
         return jsonify({'error': 'Database not initialized'}), 500
