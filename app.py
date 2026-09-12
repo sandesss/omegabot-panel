@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 import firebase_admin
 from firebase_admin import credentials, firestore
 
@@ -29,6 +29,30 @@ def get_users():
         docs = users_ref.stream()
         users_list = [{**doc.to_dict(), 'id': doc.id} for doc in docs]
         return jsonify(users_list)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/register', methods=['POST'])
+def register_user():
+    if not db:
+        return jsonify({'error': 'Database not initialized'}), 500
+    try:
+        data = request.json
+        hwid = data.get('hwid')
+        ip = data.get('ip')
+        
+        if not hwid:
+            return jsonify({'error': 'HWID is required'}), 400
+        
+        # Gamitin ang HWID bilang Document ID para hindi mag-double
+        doc_ref = db.collection('users').document(hwid)
+        doc_ref.set({
+            'hwid': hwid,
+            'ip': ip,
+            'status': 'active'
+        }, merge=True)
+        
+        return jsonify({'success': True, 'message': 'Data saved successfully'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
