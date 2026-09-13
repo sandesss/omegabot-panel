@@ -48,9 +48,38 @@
             cursor: pointer;
             font-weight: bold;
             margin-right: 5px;
+            margin-bottom: 5px;
         }
         .btn-clear:hover {
             background-color: #e68900;
+        }
+        .btn-stop {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        .btn-stop:hover {
+            background-color: #d32f2f;
+        }
+        .btn-restore {
+            background-color: #03a9f4;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        .btn-restore:hover {
+            background-color: #0288d1;
         }
         .btn-fix {
             background-color: #4CAF50;
@@ -60,6 +89,7 @@
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
+            margin-bottom: 5px;
         }
         .btn-fix:hover {
             background-color: #45a049;
@@ -101,10 +131,9 @@
                     </td>
                     <td>{{ user.action | default('none') }}</td>
                     <td>
-                        <!-- Button para sa Clear -->
                         <button class="btn-clear" onclick="triggerAction('clear', '{{ user.hwid }}')">Clear Files</button>
-                        
-                        <!-- Button para sa Fix / Unlock -->
+                        <button class="btn-stop" onclick="triggerAction('stop_internet', '{{ user.hwid }}')">Stop Internet</button>
+                        <button class="btn-restore" onclick="triggerAction('restore_internet', '{{ user.hwid }}')">Restore Internet</button>
                         <button class="btn-fix" onclick="triggerAction('fix', '{{ user.hwid }}')">Fix</button>
                     </td>
                 </tr>
@@ -124,6 +153,10 @@
                 url = '/api/fix/' + hwid;
             } else if (actionType === 'clear') {
                 url = '/api/clear/' + hwid;
+            } else if (actionType === 'stop_internet') {
+                url = '/api/stop_internet/' + hwid;
+            } else if (actionType === 'restore_internet') {
+                url = '/api/restore_internet/' + hwid;
             }
             
             if (confirm('Sigurado ka bang nais mong isagawa ang utos na ' + actionType.toUpperCase() + ' para sa HWID na ito?')) {
