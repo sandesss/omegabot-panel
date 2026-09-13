@@ -1,18 +1,20 @@
 import os
+import json
 from flask import Flask, render_template, jsonify, request
 import firebase_admin
 from firebase_admin import credentials, firestore
 
 app = Flask(__name__)
 
-# Suriin kung nasa Render secret directory o sa local folder ang credentials file
-cred_path = "FIREBASE_CREDENTIALS_JSON.json"
-if os.path.exists("/etc/secrets/FIREBASE_CREDENTIALS_JSON.json"):
-    cred_path = "/etc/secrets/FIREBASE_CREDENTIALS_JSON.json"
-
 if not firebase_admin._apps:
-    cred = credentials.Certificate(cred_path)
-    firebase_admin.initialize_app(cred)
+    firebase_json_str = os.environ.get("FIREBASE_CONFIG_JSON")
+    if firebase_json_str:
+        cred_dict = json.loads(firebase_json_str)
+        cred = credentials.Certificate(cred_dict)
+        firebase_admin.initialize_app(cred)
+    else:
+        cred = credentials.Certificate("FIREBASE_CREDENTIALS_JSON.json")
+        firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
