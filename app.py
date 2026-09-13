@@ -13,8 +13,7 @@ if not firebase_admin._apps:
         cred = credentials.Certificate(cred_dict)
         firebase_admin.initialize_app(cred)
     else:
-        cred = credentials.Certificate("FIREBASE_CREDENTIALS_JSON.json")
-        firebase_admin.initialize_app(cred)
+        raise ValueError("Walang nahanap na FIREBASE_CONFIG_JSON environment variable!")
 
 db = firestore.client()
 
