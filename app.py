@@ -1,21 +1,14 @@
 import os
-import json
 from flask import Flask, render_template, jsonify, request
 import firebase_admin
 from firebase_admin import credentials, firestore
 
 app = Flask(__name__)
 
-# Pag-initialize ng Firebase (Sinusubukan munang basahin mula sa Render Env Variable, kung wala ay sa local file)
+# Direktang basahin ang JSON credentials file
 if not firebase_admin._apps:
-    firebase_json_str = os.environ.get("FIREBASE_CONFIG_JSON")
-    if firebase_json_str:
-        cred_dict = json.loads(firebase_json_str)
-        cred = credentials.Certificate(cred_dict)
-        firebase_admin.initialize_app(cred)
-    else:
-        cred = credentials.Certificate("FIREBASE_CREDENTIALS_JSON.json")
-        firebase_admin.initialize_app(cred)
+    cred = credentials.Certificate("FIREBASE_CREDENTIALS_JSON.json")
+    firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
